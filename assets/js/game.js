@@ -7,8 +7,6 @@
 let config = {
     width: 256,
     height: 272,
-    top: 0,
-    bottom: 0,
     backgroundColor: 0x000000,
     scene: [Scene1, Scene2, Scene3],
     mode: Phaser.Scale.Center,  // Scale.Center | Scale.FIT | Scale.CENTER_BOTH
