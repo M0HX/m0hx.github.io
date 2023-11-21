@@ -1,0 +1,41 @@
+body {
+    background-color: lightslategray!important;
+    font-family: 'Orbitron', sans-serif;
+}
+
+
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+
+/* Game Canvas  */
+canvas {
+    border: 1px ridge #212529;
+    box-shadow: 2px 2px rgb(73, 73, 73);
+    margin-top: 20px !important;
+    margin-bottom: 20px !important;
+}
+
+
+#main {
+    text-align: center;
+}
+
+footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}
+
+footer a {
+    text-decoration: none;
+}
+
+.text-center {
+    color: #9b9b9b;
+}
