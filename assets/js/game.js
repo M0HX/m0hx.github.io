@@ -3,6 +3,12 @@
 // }
 
 
+// Game Settings
+let gameSettings = {
+    playerSpeed: 200,
+}
+
+
 // Setup Config
 let config = {
     width: 256,

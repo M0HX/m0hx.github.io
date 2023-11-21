@@ -24,6 +24,18 @@ class Scene2 extends Phaser.Scene {
         // this.cameras.main.startFollow(this.ship1);
 
 
+        // Add player with its animation at the end of create function
+        this.player = this.physics.add.sprite(config.width / 2 - 8, config.height - 64, "player");
+        this.player.play("thrust");
+
+        // Create variable to listen to "Keyboard Events" 
+        this.cursorKeys = this.input.keyboard.createCursorKeys();
+
+        // Set boundaries for Player's ship!
+        this.player.setCollideWorldBounds(true);
+
+        // Assign a key so that the player can shoot!
+        this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         
     
@@ -32,16 +44,24 @@ class Scene2 extends Phaser.Scene {
     // update function
     update() {
         // rotate image continuesly
-        this.ship1.angle += 2;
+        //this.ship1.angle += 2;
 
 
         // Move ship continuesly
-        this.moveShip(this.ship1, 1);
-        this.moveShip(this.ship2, 2);
-        this.moveShip(this.ship3, 3);
+        //this.moveShip(this.ship1, 1);
+        //this.moveShip(this.ship2, 2);
+        //this.moveShip(this.ship3, 3);
 
         // Move the background tilesprite y position so it looks like moving!
         this.background.tilePositionY -= 0.5;
+
+        // Call function to control the player's ship
+        this.movePlayerManager();
+
+        // Player ship shoot
+        if(Phaser.Input.Keyboard.JustDown(this.spacebar)) {
+            console.log("Fire!");
+        }
     }
 
 
@@ -70,6 +90,28 @@ class Scene2 extends Phaser.Scene {
     destroyShip(pointer, gameObject) {
         gameObject.setTexture("explosion");
         gameObject.play("explode");
+    }
+
+    // movePlayerManager Callback function (To move player's ship!)
+    movePlayerManager() {
+        
+        // Move Horizontally
+        if(this.cursorKeys.left.isDown) {
+            this.player.setVelocityX(-gameSettings.playerSpeed);
+        } else if(this.cursorKeys.right.isDown) {
+            this.player.setVelocityX(gameSettings.playerSpeed);
+        }
+
+        // Move Vertically
+        if(this.cursorKeys.up.isDown) {
+            this.player.setVelocityY(-gameSettings.playerSpeed);
+        } else if(this.cursorKeys.down.isDown) {
+            this.player.setVelocityY(gameSettings.playerSpeed);
+        }
+
+
+
+
     }
 
 

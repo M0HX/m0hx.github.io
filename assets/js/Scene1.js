@@ -115,7 +115,7 @@ class Scene1 extends Phaser.Scene {
         this.ship3.setInteractive();
 
         // Add event listener to listens whenever an interactive object is clicked. //destory
-        this.input.on('gameobjectdown', this.destroyShip, this);
+        //this.input.on('gameobjectdown', this.destroyShip, this);
 
 
         //scale image
@@ -191,9 +191,7 @@ class Scene1 extends Phaser.Scene {
         
 
 
-        // Add player with its animation at the end of create function
-        this.player = this.physics.add.sprite(config.width / 2 - 8, config.height - 64, "player");
-        this.player.play("thrust");
+        
         
 
     }
