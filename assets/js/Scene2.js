@@ -119,6 +119,27 @@ class Scene2 extends Phaser.Scene {
                                             // Poisition, FontID, Text, FontSize
         this.scoreLabel = this.add.bitmapText(10, 10, "pixelFont", "SCORE", 24);
 
+
+        // Create objects for the sounds  (sound effects)
+        this.beamSound = this.sound.add("audio_beam");
+        this.explosionSound = this.sound.add("audio_explosion");
+        this.pickupSound = this.sound.add("audio_pickup");
+
+        // Music: Add a config variable for the music!
+        this.music = this.sound.add("music");
+
+        let musicConfig = {
+            mute: false,
+            volume: 1,
+            rate: 1,
+            detune: 0,
+            seek: 0,
+            loop: false,
+            delay: 0
+        }
+
+        this.music.play(musicConfig);
+
     }
 
     // update function
@@ -141,8 +162,15 @@ class Scene2 extends Phaser.Scene {
         // Player ship shoot
         if(Phaser.Input.Keyboard.JustDown(this.spacebar)) {
             //console.log("Fire!");
-            // Call shootBeam function!
-            this.shootBeam();
+            // // Call shootBeam function!
+            // this.shootBeam();
+
+            // Put the shootbeam function inside a conditional statement to prevent shoots when player is hurt = only able to shoot if active!
+            if(this.player.active) {
+                // Call shootBeam function!
+                this.shootBeam();
+            }
+
         }
 
         // Iterate through each element of projectile group and update it!
@@ -212,6 +240,9 @@ class Scene2 extends Phaser.Scene {
     
         // Create variable "Beam" from the "Class Beam" and pass the scene as parameter.
         let beam = new Beam(this);
+
+        // Make the beam make some noise!
+        this.beamSound.play();
     
     }
 
@@ -221,17 +252,53 @@ class Scene2 extends Phaser.Scene {
     pickPowerUp(player, powerUp) {
         // make it inactive and hide it
         powerUp.disableBody(true, true);
+
+        // Make the pickup powerup make some noise!
+        this.pickupSound.play();
     }
 
     // Reset position of player and enemy when they crash each other
     hurtPlayer(player, enemy) {
+        // this.resetShipPos(enemy);
+        // player.x = config.width / 2 - 8;
+        // player.y = config.height - 64;
+
+        // add explosion to our ship when it is destoryed
         this.resetShipPos(enemy);
-        player.x = config.width / 2 - 8;
-        player.y = config.height - 64;
+
+        // fix for when player ship is destoryed and respawn doesnt kill immediently.
+        // prevent the player being destroyed as long as it remain transparent.
+        if(this.player.alpha < 1) {
+            return;
+        }
+
+        let explosion = new Explosion(this, this.player.x, player.y);
+
+        // disable the ship and hide it after it explodes
+        player.disableBody(true, true);
+
+        // Reset Player
+        //this.resetPlayer();
+
+        // Reset Player w Delay (Timer) 1.5 sec
+        this.time.addEvent({
+            delay: 1500,
+            callback: this.resetPlayer, // call reset player function
+            callbackScope: this,
+            loop: false
+        });
+
+        // Make the player hit make some noise!
+        this.explosionSound.play();
+
     }
 
     // Reset ship position when hit
     hitEnemy(projectile, enemy) {
+
+        // add new explosion variable.. to add new instance of the explosion class everytime an enemy is hit!
+        let explosion = new Explosion(this, enemy.x, enemy.y);
+
         projectile.destroy();
         this.resetShipPos(enemy);
 
@@ -243,6 +310,8 @@ class Scene2 extends Phaser.Scene {
         let scoreFormated = this.zeroPad(this.score, 6);
         this.scoreLabel.text = "SCORE " + scoreFormated;
 
+        // Make the enemy hit make some noise!
+        this.explosionSound.play();
     }
 
     // Zero pad format function
@@ -252,6 +321,32 @@ class Scene2 extends Phaser.Scene {
             stringNumber = "0" + stringNumber;
         }
         return stringNumber;
+    }
+
+    // Reset Player Function
+    resetPlayer() {
+        let x = config.width / 2 - 8;
+        let y = config.height + 64;
+
+        this.player.enableBody(true, x, y, true, true);
+
+        // make the player transparent
+        this.player.alpha = 0.5;
+
+
+        // code restplayer to fade back full transparency.
+        let tween = this.tweens.add({
+            targets: this.player,
+            y: config.height - 64,
+            ease: 'Power1',
+            duration: 1500,
+            repeat: 0,
+            onComplete: function() {
+                this.player.alpha = 1;
+            },
+            callbackScope: this
+        });
+
     }
 
 
