@@ -37,7 +37,8 @@ class Scene2 extends Phaser.Scene {
         // Assign a key so that the player can shoot!
         this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-        
+        // Create group to hold all our projectiles
+        this.projectiles = this.add.group();
     
     }
 
@@ -60,8 +61,19 @@ class Scene2 extends Phaser.Scene {
 
         // Player ship shoot
         if(Phaser.Input.Keyboard.JustDown(this.spacebar)) {
-            console.log("Fire!");
+            //console.log("Fire!");
+            // Call shootBeam function!
+            this.shootBeam();
         }
+
+        // Iterate through each element of projectile group and update it!
+        for(let i = 0; i < this.projectiles.getChildren().length; i++) {
+            let beam = this.projectiles.getChildren()[i];
+            beam.update();
+        }
+
+        
+
     }
 
 
@@ -112,6 +124,16 @@ class Scene2 extends Phaser.Scene {
 
 
 
+    }
+
+
+    // shootBeam function to shoot the beam. UwU
+    shootBeam() {
+        //let beam = this.physics.add.sprite(this.player.x, this.player.y, "beam");
+    
+        // Create variable "Beam" from the "Class Beam" and pass the scene as parameter.
+        let beam = new Beam(this);
+    
     }
 
 

@@ -8,6 +8,7 @@ h1 {
     font-family: 'Orbitron', sans-serif;
     font-weight: 400;
     text-transform: uppercase;
+    margin-bottom: 1% !important;
 }
 
 
@@ -15,14 +16,11 @@ h1 {
 canvas {
     border: 1px ridge #212529;
     box-shadow: 2px 2px rgb(73, 73, 73);
-    margin-top: 20px !important;
-    margin-bottom: 20px !important;
+    margin-top: 0% !important;
+    max-width: 100%; /* Set the maximum width to 100% of the parent container */
 }
 
 
-#main {
-    text-align: center;
-}
 
 footer {
     position: fixed;
@@ -30,7 +28,14 @@ footer {
     bottom: 0;
     width: 100%;
     text-align: center;
+    margin-top: 5% !important;
 }
+
+#main {
+    text-align: center;
+}
+
+
 
 footer a {
     text-decoration: none;
