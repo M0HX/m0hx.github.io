@@ -9,7 +9,6 @@ let config = {
     height: 500,
     backgroundColor: 0x000000,
     scene: [Scene1, Scene2, Scene3],
-    mode: Phaser.Scale.Center,  // Scale.Center | Scale.FIT | Scale.CENTER_BOTH
     scale: {
         autoCenter: Phaser.Scale.CENTER_BOTH,
         aspectRatio: 1, // Set the aspect ratio (width / height)
@@ -22,6 +21,7 @@ let config = {
         }
     }
 }
+
 
 // New Phaser Game Object
 let game = new Phaser.Game(config);
