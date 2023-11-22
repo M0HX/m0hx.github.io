@@ -42,11 +42,6 @@ class Scene2 extends Phaser.Scene {
         this.input.on('gameobjectdown', this.destroyShip, this);
 
         
-        this.add.text(20, 20, "Playing game", {
-            font: "25px Arial",
-            fill: "yellow"
-        });
-
 
         this.physics.world.setBoundsCollision();
         this.powerUps = this.physics.add.group();
@@ -103,6 +98,27 @@ class Scene2 extends Phaser.Scene {
         // Add overlaps with callback functions
         this.physics.add.overlap(this.projectiles, this.enemies, this.hitEnemy, null, this);
         
+
+
+        // HUG Background behind Score Label (for visiblity)
+        let graphics = this.add.graphics();
+        graphics.fillStyle(0x000000, 1); // black solid fill
+        graphics.beginPath();
+        graphics.moveTo(0, 0);
+        graphics.lineTo(config.width, 0);
+        graphics.lineTo(config.width, 30);
+        graphics.lineTo(0, 30);
+        graphics.lineTo(0, 0);
+        graphics.closePath();
+        graphics.fillPath();
+
+        // Score Variable
+        this.score = 0;
+
+         // Add Score Label Variable with Bitmap text function
+                                            // Poisition, FontID, Text, FontSize
+        this.scoreLabel = this.add.bitmapText(10, 10, "pixelFont", "SCORE", 24);
+
     }
 
     // update function
@@ -218,6 +234,24 @@ class Scene2 extends Phaser.Scene {
     hitEnemy(projectile, enemy) {
         projectile.destroy();
         this.resetShipPos(enemy);
+
+        // Increase Score
+        this.score += 15;
+        //this.scoreLabel.text = "SCORE " + this.score;
+
+        // ZeroPad formatted score
+        let scoreFormated = this.zeroPad(this.score, 6);
+        this.scoreLabel.text = "SCORE " + scoreFormated;
+
+    }
+
+    // Zero pad format function
+    zeroPad(number, size){
+        let stringNumber = String(number);
+        while(stringNumber.length < (size || 2)){
+            stringNumber = "0" + stringNumber;
+        }
+        return stringNumber;
     }
 
 

@@ -54,6 +54,10 @@ class Scene1 extends Phaser.Scene {
             frameHeight: 16
         });
 
+        // Load Bitmap Font Files
+        this.load.bitmapFont("pixelFont", "assets/font/font.png", "assets/font/font.xml");
+
+
     }
 
 
@@ -138,6 +142,8 @@ class Scene1 extends Phaser.Scene {
             repeat: -1
         });
         
+
+       
 
     }
 }
