@@ -3,7 +3,7 @@ class Beam extends Phaser.GameObjects.Sprite {
 
         // get the position of the player's ship using the scene's reference
         let x = scene.player.x;
-        let y = scene.player.y;
+        let y = scene.player.y - 16;
 
         super(scene, x, y, "beam");
 
@@ -15,6 +15,9 @@ class Beam extends Phaser.GameObjects.Sprite {
         this.play("beam_anim");
         scene.physics.world.enableBody(this); //enable spritesheet to have physics
         this.body.velocity.y = - 250; // set velocity to go upwards!
+    
+        // Add the beam projectiles group
+        scene.projectiles.add(this);
     }
 
 
@@ -24,7 +27,7 @@ class Beam extends Phaser.GameObjects.Sprite {
 
         // if beam reaches on top of canvas more than 32 ... destory it!
         if(this.y < 32) {
-            this.destory();
+            this.destroy();
         }
 
     }
