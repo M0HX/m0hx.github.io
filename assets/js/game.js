@@ -8,7 +8,7 @@ let config = {
     width: 720,
     height: 500,
     backgroundColor: 0x000000,
-    scene: [Scene1, Scene2, Scene3],
+    scene: [Scene1, Scene2, Scene3, Scene4],
     scale: {
         autoCenter: Phaser.Scale.CENTER_BOTH,
         aspectRatio: 1, // Set the aspect ratio (width / height)

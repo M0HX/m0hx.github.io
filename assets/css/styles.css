@@ -3,14 +3,12 @@ body {
     font-family: 'Orbitron', sans-serif;
 }
 
-
 h1 {
     font-family: 'Orbitron', sans-serif;
     font-weight: 400;
     text-transform: uppercase;
     margin-bottom: 1% !important;
 }
-
 
 /* Game Canvas  */
 canvas {
@@ -19,8 +17,6 @@ canvas {
     margin-top: 0% !important;
     max-width: 100%; /* Set the maximum width to 100% of the parent container */
 }
-
-
 
 footer {
     position: fixed;
@@ -35,12 +31,26 @@ footer {
     text-align: center;
 }
 
-
-
 footer a {
     text-decoration: none;
 }
 
 .text-center {
     color: #9b9b9b;
+}
+
+ /* Set the image dimensions*/
+ .how-to-image {
+    width: 400px;
+    height: 300px;
+}
+
+/* Style for the quote */
+.gameplay-quote {
+    font-style: italic;
+    text-align: center;
+    margin-top: 10px;
+    max-width: 300px; /* Adjust the max-width as needed */
+    margin-left: auto;
+    margin-right: auto;
 }

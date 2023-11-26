@@ -1,353 +1,252 @@
 class Scene2 extends Phaser.Scene {
-
     constructor() {
         super("playGame");
     }
 
+    preload() {
+        this.load.image("background", "assets/imgs/background.png");
+        this.load.image('apollo', 'assets/imgs/spritesheets/Apollo.png');
+        this.load.image('aurora', 'assets/imgs/spritesheets/Aurora.png');
 
-    // Create function
+        // Load the image for the asteroid
+        this.load.spritesheet('asteroid_gray', 'assets/imgs/spritesheets/asteroid_gray.png', {
+            frameWidth: 16,
+            frameHeight: 16,
+        });
+
+        // Load the explosion spritesheet
+        this.load.spritesheet('explosion', 'assets/imgs/spritesheets/explosion.png', {
+            frameWidth: 16, 
+            frameHeight: 16
+        });
+
+        // Load health power-up spritesheet
+        this.load.spritesheet('healthPowerUp', 'assets/imgs/spritesheets/health.png', {
+            frameWidth: 16,
+            frameHeight: 16
+        });
+
+        // Load shield power-up spritesheet
+        this.load.spritesheet('shieldPowerUp', 'assets/imgs/spritesheets/shield.png', {
+            frameWidth: 16,
+            frameHeight: 16
+        });
+
+        // Load the explosion sound
+        this.load.audio("audio_explosion", ["assets/sounds/explosion.ogg", "assets/sounds/explosion.mp3"]);
+
+        // Load the health pickup sound
+        this.load.audio("audio_health_pickup", ["assets/sounds/healthPickup.ogg", "assets/sounds/healthPickup.mp3"]);
+
+        // Load the shield pickup sound
+        this.load.audio("audio_shield_pickup", ["assets/sounds/shieldPickup.ogg", "assets/sounds/shieldPickup.mp3"]);
+
+
+        // Load the MUSIC!
+        this.load.audio("background_music", ["assets/sounds/rickroll.ogg", "assets/sounds/rickroll.mp3"]);
+
+
+    }
+
     create() {
-                                                                             //KEY  
         this.background = this.add.tileSprite(0, 0, config.width, config.height, "background");
-
-        // Parallax Scrolling
-        this.background.setOrigin(0,0);
-
-        // set scroll factor
+        this.background.setOrigin(0, 0);
         this.background.setScrollFactor(0);
 
-        // Follow Player
-        // this.cameras.main.startFollow(this.ship1);
+        // Create astronauts for player 1 and player 2
+        this.astronaut1 = new Astronaut(this, config.width / 4, config.height / 4, 'apollo', 'Apollo');
+        this.astronaut2 = new Astronaut(this, (3 * config.width) / 4, config.height / 4, 'aurora', 'Aurora');
 
-
-        this.ship1 = this.add.sprite(config.width / 2 - 50, config.height / 2, "ship");
-        this.ship2 = this.add.sprite(config.width / 2, config.height / 2, "ship2");
-        this.ship3 = this.add.sprite(config.width / 2 + 50, config.height / 2, "ship3");
-
-        // 3.1 add the ships to a group with physics
-        this.enemies = this.physics.add.group();
-        this.enemies.add(this.ship1);
-        this.enemies.add(this.ship2);
-        this.enemies.add(this.ship3);
-
-        this.ship1.play("ship1_anim");
-        this.ship2.play("ship2_anim");
-        this.ship3.play("ship3_anim");
-
-        this.ship1.setInteractive();
-        this.ship2.setInteractive();
-        this.ship3.setInteractive();
-
-
-        this.input.on('gameobjectdown', this.destroyShip, this);
-
-        
-
-        this.physics.world.setBoundsCollision();
-        this.powerUps = this.physics.add.group();
-
-        
-        for (let i = 0; i < gameSettings.maxPowerups; i++) {
-            let powerUp = this.physics.add.sprite(16, 16, "power-up");
-            this.powerUps.add(powerUp);
-            powerUp.setRandomPosition(0, 0, game.config.width, game.config.height);
-      
-            if (Math.random() > 0.5) {
-              powerUp.play("red");
-            } else {
-              powerUp.play("gray");
-            }
-      
-            powerUp.setVelocity(gameSettings.powerUpVel, gameSettings.powerUpVel);
-            powerUp.setCollideWorldBounds(true);
-            powerUp.setBounce(1);
-        }
-        
-        
-        // Add player with its animation at the end of create function
-        this.player = this.physics.add.sprite(config.width / 2 - 8, config.height - 64, "player");
-        this.player.play("thrust");
-
-
-        // Create variable to listen to "Keyboard Events" 
-        this.cursorKeys = this.input.keyboard.createCursorKeys();
-
-        // Set boundaries for Player's ship!
-        this.player.setCollideWorldBounds(true);
-
-        // Assign a key so that the player can shoot!
-        this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-
-        // Create group to hold all our projectiles
-        this.projectiles = this.add.group();
-
-        // Enable collisions
-        //this.physics.add.collider(this.projectiles, this.powerUps);
-    
-        // Destory the shot once it collides with object
-        this.physics.add.collider(this.projectiles, this.powerUps, function(projectile, powerUp) {
-            projectile.destroy();
+        // Set up input for player 1 (WASD keys)
+        this.cursors1 = this.input.keyboard.addKeys({
+            up: Phaser.Input.Keyboard.KeyCodes.W,
+            down: Phaser.Input.Keyboard.KeyCodes.S,
+            left: Phaser.Input.Keyboard.KeyCodes.A,
+            right: Phaser.Input.Keyboard.KeyCodes.D
         });
 
-         // Player can pick powerups
-        this.physics.add.overlap(this.player, this.powerUps, this.pickPowerUp, null, this);
+        // Set up input for player 2 (Arrow keys)
+        this.cursors2 = this.input.keyboard.createCursorKeys();
 
-        // Overlap player with enemies
-        this.physics.add.overlap(this.player, this.enemies, this.hurtPlayer, null, this);
+        // Create an invisible sprite as the barrier
+        this.barrier = this.physics.add.sprite(config.width / 2, config.height / 2, null);
+        this.barrier.setSize(5, config.height); // Set the size of the barrier (thinner)
+        this.barrier.setImmovable(true); // Make the barrier immovable
+        this.barrier.setVisible(false); // Make the barrier invisible
 
-        // Add overlaps with callback functions
-        this.physics.add.overlap(this.projectiles, this.enemies, this.hitEnemy, null, this);
-        
+        // Enable collisions between astronauts and the barrier
+        this.physics.add.collider(this.astronaut1, this.barrier);
+        this.physics.add.collider(this.astronaut2, this.barrier);
 
+        // Create a graphics object for the barrier
+        this.barrierGraphics = this.add.graphics();
 
-        // HUG Background behind Score Label (for visiblity)
-        let graphics = this.add.graphics();
-        graphics.fillStyle(0x000000, 1); // black solid fill
-        graphics.beginPath();
-        graphics.moveTo(0, 0);
-        graphics.lineTo(config.width, 0);
-        graphics.lineTo(config.width, 30);
-        graphics.lineTo(0, 30);
-        graphics.lineTo(0, 0);
-        graphics.closePath();
-        graphics.fillPath();
+        // Set the fill color and alpha for the barrier (light shade of white)
+        this.barrierGraphics.fillStyle(0xeeeeee, 0.5); // Light shade of white with 0.5 alpha (transparency)
 
-        // Score Variable
-        this.score = 0;
+        // Draw the filled rectangle for the barrier
+        this.barrierGraphics.fillRect(config.width / 2 - 2.5, 0, 5, config.height); // Thinner
 
-         // Add Score Label Variable with Bitmap text function
-                                            // Poisition, FontID, Text, FontSize
-        this.scoreLabel = this.add.bitmapText(10, 10, "pixelFont", "SCORE", 24);
+        // Enable physics for the graphics object
+        this.physics.world.enable(this.barrierGraphics);
 
+        // Make the graphics object immovable
+        this.barrierGraphics.body.setImmovable(true);
 
-        // Create objects for the sounds  (sound effects)
-        this.beamSound = this.sound.add("audio_beam");
-        this.explosionSound = this.sound.add("audio_explosion");
-        this.pickupSound = this.sound.add("audio_pickup");
+        // Enable collisions between astronauts
+        this.physics.add.collider(this.astronaut1, this.astronaut2);
 
-        // Music: Add a config variable for the music!
-        this.music = this.sound.add("music");
+        // Create asteroids group
+        this.asteroidsGroup = this.physics.add.group();
 
-        let musicConfig = {
-            mute: false,
-            volume: 1,
-            rate: 1,
-            detune: 0,
-            seek: 0,
-            loop: false,
-            delay: 0
-        }
-
-        this.music.play(musicConfig);
-
-    }
-
-    // update function
-    update() {
-        // rotate image continuesly
-        //this.ship1.angle += 2;
-
-
-        // Move ship continuesly
-        this.moveShip(this.ship1, 1);
-        this.moveShip(this.ship2, 2);
-        this.moveShip(this.ship3, 3);
-
-        // Move the background tilesprite y position so it looks like moving!
-        this.background.tilePositionY -= 0.5;
-
-        // Call function to control the player's ship
-        this.movePlayerManager();
-
-        // Player ship shoot
-        if(Phaser.Input.Keyboard.JustDown(this.spacebar)) {
-            //console.log("Fire!");
-            // // Call shootBeam function!
-            // this.shootBeam();
-
-            // Put the shootbeam function inside a conditional statement to prevent shoots when player is hurt = only able to shoot if active!
-            if(this.player.active) {
-                // Call shootBeam function!
-                this.shootBeam();
-            }
-
-        }
-
-        // Iterate through each element of projectile group and update it!
-        for(let i = 0; i < this.projectiles.getChildren().length; i++) {
-            let beam = this.projectiles.getChildren()[i];
-            beam.update();
-        }
-
-
-
-    }
-
-
-
-    //--- Functions ---//
-
-
-    // Move Ship
-    moveShip(ship, speed) {
-        ship.y += speed;  /// I want the reverse! cuz objects/obstacles are going to be from down to up!
-
-        // Rest + Random X position
-        if(ship.y > config.height) {
-            this.resetShipPos(ship);
-        }
-    } 
-
-    // Reset Ship Position
-    resetShipPos(ship) {
-        ship.y = 0;
-        let randomX = Phaser.Math.Between(0, config.width); // to set ship on random x-axis
-        ship.x = randomX;
-    }
-
-    // DestroyShip Callback function
-    destroyShip(pointer, gameObject) {
-        gameObject.setTexture("explosion");
-        gameObject.play("explode");
-    }
-
-    // movePlayerManager Callback function (To move player's ship!)
-    movePlayerManager() {
-        
-        // Move Horizontally
-        if(this.cursorKeys.left.isDown) {
-            this.player.setVelocityX(-gameSettings.playerSpeed);
-        } else if(this.cursorKeys.right.isDown) {
-            this.player.setVelocityX(gameSettings.playerSpeed);
-        }
-
-        // Move Vertically
-        if(this.cursorKeys.up.isDown) {
-            this.player.setVelocityY(-gameSettings.playerSpeed);
-        } else if(this.cursorKeys.down.isDown) {
-            this.player.setVelocityY(gameSettings.playerSpeed);
-        }
-
-
-
-
-    }
-
-
-    // shootBeam function to shoot the beam. UwU
-    shootBeam() {
-        //let beam = this.physics.add.sprite(this.player.x, this.player.y, "beam");
-    
-        // Create variable "Beam" from the "Class Beam" and pass the scene as parameter.
-        let beam = new Beam(this);
-
-        // Make the beam make some noise!
-        this.beamSound.play();
-    
-    }
-
-
-
-    // Remove powerup when taken
-    pickPowerUp(player, powerUp) {
-        // make it inactive and hide it
-        powerUp.disableBody(true, true);
-
-        // Make the pickup powerup make some noise!
-        this.pickupSound.play();
-    }
-
-    // Reset position of player and enemy when they crash each other
-    hurtPlayer(player, enemy) {
-        // this.resetShipPos(enemy);
-        // player.x = config.width / 2 - 8;
-        // player.y = config.height - 64;
-
-        // add explosion to our ship when it is destoryed
-        this.resetShipPos(enemy);
-
-        // fix for when player ship is destoryed and respawn doesnt kill immediently.
-        // prevent the player being destroyed as long as it remain transparent.
-        if(this.player.alpha < 1) {
-            return;
-        }
-
-        let explosion = new Explosion(this, this.player.x, player.y);
-
-        // disable the ship and hide it after it explodes
-        player.disableBody(true, true);
-
-        // Reset Player
-        //this.resetPlayer();
-
-        // Reset Player w Delay (Timer) 1.5 sec
-        this.time.addEvent({
-            delay: 1500,
-            callback: this.resetPlayer, // call reset player function
+        // Set a timer to create random asteroids at intervals
+        this.asteroidTimer = this.time.addEvent({
+            delay: 1000, // Set the delay between asteroid creation
+            callback: this.spawnAsteroid,
             callbackScope: this,
-            loop: false
+            loop: true, // Set to true for continuous asteroid creation
         });
 
-        // Make the player hit make some noise!
-        this.explosionSound.play();
+        // Create health power-up group
+        this.healthPowerUpsGroup = this.physics.add.group();
 
-    }
+        // Create shield power-up group
+        this.shieldPowerUpsGroup = this.physics.add.group();
 
-    // Reset ship position when hit
-    hitEnemy(projectile, enemy) {
-
-        // add new explosion variable.. to add new instance of the explosion class everytime an enemy is hit!
-        let explosion = new Explosion(this, enemy.x, enemy.y);
-
-        projectile.destroy();
-        this.resetShipPos(enemy);
-
-        // Increase Score
-        this.score += 15;
-        //this.scoreLabel.text = "SCORE " + this.score;
-
-        // ZeroPad formatted score
-        let scoreFormated = this.zeroPad(this.score, 6);
-        this.scoreLabel.text = "SCORE " + scoreFormated;
-
-        // Make the enemy hit make some noise!
-        this.explosionSound.play();
-    }
-
-    // Zero pad format function
-    zeroPad(number, size){
-        let stringNumber = String(number);
-        while(stringNumber.length < (size || 2)){
-            stringNumber = "0" + stringNumber;
-        }
-        return stringNumber;
-    }
-
-    // Reset Player Function
-    resetPlayer() {
-        let x = config.width / 2 - 8;
-        let y = config.height + 64;
-
-        this.player.enableBody(true, x, y, true, true);
-
-        // make the player transparent
-        this.player.alpha = 0.5;
-
-
-        // code restplayer to fade back full transparency.
-        let tween = this.tweens.add({
-            targets: this.player,
-            y: config.height - 64,
-            ease: 'Power1',
-            duration: 1500,
-            repeat: 0,
-            onComplete: function() {
-                this.player.alpha = 1;
-            },
-            callbackScope: this
+        // Set a timer to create random health power-ups at intervals
+        this.healthPowerUpTimer = this.time.addEvent({
+            delay: 20000, // Set the delay between health power-up creation 
+            callback: this.spawnHealthPowerUp,
+            callbackScope: this,
+            loop: true, // Set to true for continuous power-up creation
         });
 
+
+        // Set a timer to create random shield power-ups at intervals
+        this.shieldPowerUpTimer = this.time.addEvent({
+            delay: 22000, // Set the delay between shield power-up creation
+            callback: this.spawnShieldPowerUp,
+            callbackScope: this,
+            loop: true, // Set to true for continuous power-up creation
+        });
+
+        // Create text objects to display player information
+        this.player1InfoText = this.add.text(16, 16, '', {
+            fontFamily: 'Arial',
+            fontSize: '18px',
+            color: '#ffffff',
+        });
+
+        this.player2InfoText = this.add.text(config.width - 16, 16, '', {
+            fontFamily: 'Arial',
+            fontSize: '18px',
+            color: '#ffffff',
+            align: 'right',
+        });
+        this.player2InfoText.setOrigin(1, 0); // Align text to the top right
+
+        // Set transparency using setAlpha method
+        this.player1InfoText.setAlpha(0.3);
+        this.player2InfoText.setAlpha(0.3);
+
+        // Load the explosion spritesheet
+        this.load.spritesheet('explosion', 'assets/imgs/spritesheets/explosion.png', {
+            frameWidth: 16, frameHeight: 16
+        });
+
+        // Create explosion animation
+        this.anims.create({
+            key: 'explode',
+            frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 4 }), // Assuming 5 frames in the sprite sheet
+            frameRate: 20,
+            repeat: 0 // Play only once
+        });
+
+        // Create explosion sound
+        this.explosionSound = this.sound.add("audio_explosion");
+
+        // Create health pickup sound
+        this.healthPickupSound = this.sound.add("audio_health_pickup");
+
+        // Create shield pickup sound
+        this.shieldPickupSound = this.sound.add("audio_shield_pickup");
+
+        // Play MUSIC ! :D
+        this.backgroundMusic = this.sound.add("background_music", { loop: true, volume: 0.5 });
+        this.backgroundMusic.play();
     }
 
+    update() {
+        this.background.tilePositionY += 0.7;
+
+        // Call update method for both astronauts
+        this.astronaut1.update(this.cursors1);
+        this.astronaut2.update(this.cursors2);
+
+        // Update asteroids
+        this.asteroidsGroup.getChildren().forEach((asteroid) => {
+            asteroid.update();
+        });
+
+        // Update health power-ups
+        this.healthPowerUpsGroup.getChildren().forEach((powerUp) => {
+            // update logic for power-ups if needed
+        });
+
+        // Update shield power-ups
+        this.shieldPowerUpsGroup.getChildren().forEach((powerUp) => {
+            // update logic for shield power-ups if needed
+        });
+
+        // Update player information text
+        this.player1InfoText.setText(`Player 1\nName: ${this.astronaut1.name}\nHealth: ${this.astronaut1.health}\nShield: ${this.astronaut1.shield}`);
+        this.player2InfoText.setText(`Player 2\nName: ${this.astronaut2.name}\nHealth: ${this.astronaut2.health}\nShield: ${this.astronaut2.shield}`);
+    }
+
+    spawnAsteroid() {
+        // Define safe zone in the middle of the canvas with increased width
+        const safeZoneWidth = this.game.config.width / 3;
+
+        // Define the barrier width to avoid spawning asteroids on the barrier
+        const barrierWidth = 5;
+
+        // Calculate the maximum distance from the barrier on both sides
+        const maxDistanceFromBarrier = Math.min(safeZoneWidth - barrierWidth, safeZoneWidth * 2 - barrierWidth);
+
+        // The safe zone range to avoid the region occupied by the barrier
+        const safeZoneRange = [
+            Phaser.Math.Between(barrierWidth, maxDistanceFromBarrier),
+            Phaser.Math.Between(safeZoneWidth * 2 + barrierWidth, safeZoneWidth * 3 - barrierWidth)
+        ];
+
+        // Randomly choose a spawn position within the safe zone
+        const randomX = Phaser.Math.Between(safeZoneRange[0], safeZoneRange[1]);
+
+        // Always spawn at the bottom
+        const startY = this.game.config.height;
+        const randomY = startY;
+
+        // Create a new asteroid instance with the correct spritesheet and explosion animation
+        const asteroid = new Asteroid(this, randomX, randomY, 'asteroid_gray', this.anims.get('explode'));
+        this.asteroidsGroup.add(asteroid);
+    }
+
+    // Function to spawn health power-up
+    spawnHealthPowerUp() {
+        const randomX = Phaser.Math.Between(0, this.game.config.width);
+        const randomY = Phaser.Math.Between(0, this.game.config.height);
+
+        const healthPowerUp = new HealthPowerUp(this, randomX, randomY, 'healthPowerUp');
+        this.healthPowerUpsGroup.add(healthPowerUp);
+    }
+
+    // Function to spawn shield power-up
+    spawnShieldPowerUp() {
+        const randomX = Phaser.Math.Between(0, this.game.config.width);
+        const randomY = Phaser.Math.Between(0, this.game.config.height);
+
+        const shieldPowerUp = new ShieldPowerUp(this, randomX, randomY, 'shieldPowerUp');
+        this.shieldPowerUpsGroup.add(shieldPowerUp);
+    }
 
 }
