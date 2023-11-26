@@ -9,7 +9,7 @@ a song from my metal playlist :D
 
 # Mockup 
 This is where I was sketching the idea of the game, I made the mockup in Photoshop.
-![Mock Up]([http://url/to/img.png](https://i.ibb.co/mzWN0Fz/Andromeda-Mock1.png))
+![Mock Up](https://i.ibb.co/mzWN0Fz/Andromeda-Mock1.png)
 
 # Plan
 First thing I did was to think about the game idea, then I gathered up all the features I want in game.
